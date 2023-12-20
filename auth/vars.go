@@ -7,7 +7,6 @@ import (
 )
 
 var (
-	secretKey string = NewEncryptSecretKey()
-	SQLConn   *pgx.ConnConfig
-	SQLCtx    context.Context
+	SQLConn *pgx.ConnConfig
+	SQLCtx  context.Context
 )

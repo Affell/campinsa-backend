@@ -1,7 +1,6 @@
-package auth
+package user
 
 import (
-	"context"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
@@ -9,30 +8,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"time"
 
 	"github.com/fatih/structs"
 	"github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 	"github.com/kataras/golog"
 )
-
-const (
-	tokenTimeout         = 4 * time.Hour
-	TokenRememberTimeout = 30 * 24 * time.Hour
-)
-
-var (
-	UserTokenRedisConn *redis.Client
-	UserTokenRedisCtx  context.Context
-)
-
-type UserToken struct {
-	TokenID   string    `json:"token_id" structs:"-"`
-	ID        int64     `json:"id" structs:"id"`
-	Email     string    `json:"email" structs:"email"`
-	CreatedAt time.Time `json:"created_at" structs:"-"`
-}
 
 func (token UserToken) IsNil() bool {
 	return token.TokenID == ""

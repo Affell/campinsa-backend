@@ -16,7 +16,7 @@ func StatusCode(code int) (int, map[string]interface{}) {
 	case iris.StatusBadRequest:
 		data["message"] = "Requête invalide"
 	case iris.StatusInternalServerError:
-		data["message"] = "Erreur interne au serveur"
+		data["message"] = "Erreur interne du serveur"
 	case iris.StatusOK:
 		data["message"] = "Action réalisée avec succès"
 	case iris.StatusNoContent:

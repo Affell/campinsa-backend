@@ -7,14 +7,12 @@ import (
 	"strings"
 	"time"
 
-	"oui/auth"
-
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v4"
 	"github.com/kataras/golog"
 )
 
-func GetSQLUserToken(Email, Password string) (token auth.UserToken, err error) {
+func GetSQLUserToken(Email, Password string) (token UserToken, err error) {
 
 	var (
 		id    sql.NullInt64
@@ -43,7 +41,7 @@ func GetSQLUserToken(Email, Password string) (token auth.UserToken, err error) {
 		return
 	}
 
-	token = auth.UserToken{
+	token = UserToken{
 		ID:        id.Int64,
 		Email:     email.String,
 		CreatedAt: time.Now(),
@@ -110,7 +108,7 @@ func CheckEmailAvailability(email string) (available bool) {
 func GetUserById(UserId int64) (u User, err error) {
 
 	var (
-		email, firstname, lastname, reset_token, password sql.NullString
+		email, firstname, lastname, taxiToken, resetToken, password sql.NullString
 	)
 
 	sqlCo, err := pgx.ConnectConfig(postgresql.SQLCtx, postgresql.SQLConn)
@@ -120,7 +118,7 @@ func GetUserById(UserId int64) (u User, err error) {
 	defer sqlCo.Close(postgresql.SQLCtx)
 
 	// Requête GetUserById
-	var query = "SELECT email, firstname, lastname, reset_token, password" +
+	var query = "SELECT email, firstname, lastname, taxi_token, reset_token, password" +
 		"FROM account " +
 		"WHERE id=$1 "
 
@@ -128,7 +126,8 @@ func GetUserById(UserId int64) (u User, err error) {
 		&email,
 		&firstname,
 		&lastname,
-		&reset_token,
+		&taxiToken,
+		&resetToken,
 		&password,
 	)
 
@@ -142,7 +141,49 @@ func GetUserById(UserId int64) (u User, err error) {
 		Lastname:   lastname.String,
 		Email:      email.String,
 		Password:   password.String,
-		ResetToken: reset_token.String,
+		TaxiToken:  taxiToken.String,
+		ResetToken: resetToken.String,
+	}
+
+	return
+}
+
+func GetUserByTaxiToken(taxiToken string) (u User, err error) {
+
+	var (
+		id                                     sql.NullInt64
+		email, firstname, lastname, resetToken sql.NullString
+	)
+
+	sqlCo, err := pgx.ConnectConfig(postgresql.SQLCtx, postgresql.SQLConn)
+	if err != nil {
+		return
+	}
+	defer sqlCo.Close(postgresql.SQLCtx)
+
+	var query = "SELECT id, email, firstname, lastname, reset_token " +
+		"FROM account " +
+		"WHERE taxi_token=$1 "
+
+	err = sqlCo.QueryRow(postgresql.SQLCtx, query, taxiToken).Scan(
+		&id,
+		&email,
+		&firstname,
+		&lastname,
+		&resetToken,
+	)
+
+	if err != nil {
+		return
+	}
+
+	u = User{
+		ID:         id.Int64,
+		Firstname:  firstname.String,
+		Lastname:   lastname.String,
+		Email:      email.String,
+		TaxiToken:  taxiToken,
+		ResetToken: resetToken.String,
 	}
 
 	return
@@ -215,20 +256,21 @@ func GetUserByEmail(userEmail string) (u User, msg string) {
 	}
 	defer sqlCo.Close(postgresql.SQLCtx)
 
-	query := "SELECT id, firstname, lastname, password, reset_token " +
+	query := "SELECT id, firstname, lastname, password, taxi_token, reset_token " +
 		"FROM account " +
 		"where email=$1"
 
 	var (
-		id                                         sql.NullInt64
-		firstname, lastname, reset_token, password sql.NullString
+		id                                                   sql.NullInt64
+		firstname, lastname, taxiToken, resetToken, password sql.NullString
 	)
 	err = sqlCo.QueryRow(postgresql.SQLCtx, query, userEmail).Scan(
 		&id,
 		&firstname,
 		&lastname,
 		&password,
-		&reset_token,
+		&taxiToken,
+		&resetToken,
 	)
 
 	if err == pgx.ErrNoRows {
@@ -246,7 +288,8 @@ func GetUserByEmail(userEmail string) (u User, msg string) {
 		Lastname:   lastname.String,
 		Email:      userEmail,
 		Password:   password.String,
-		ResetToken: reset_token.String,
+		TaxiToken:  taxiToken.String,
+		ResetToken: resetToken.String,
 	}
 
 	return
@@ -312,6 +355,32 @@ func GenResetToken(email string) (token string) {
 		golog.Error(query, err)
 	} else if rowsAffected == 0 {
 		golog.Infof("Tentative de génération de token infructueuse. L'utilisateur %v n'existe pas ou n'est pas actif !", email)
+	} else if rowsAffected == 1 {
+		token = tempUUID
+	}
+
+	return
+}
+
+func GenTaxiToken(userId int64) (token string) {
+
+	sqlCo, err := pgx.ConnectConfig(postgresql.SQLCtx, postgresql.SQLConn)
+	if err != nil {
+		return
+	}
+	defer sqlCo.Close(postgresql.SQLCtx)
+
+	tempUUID := uuid.New().String()
+
+	query := "UPDATE account " +
+		"SET taxi_token=$1 " +
+		"WHERE id=$2"
+
+	updateSQLCmd, err := sqlCo.Exec(postgresql.SQLCtx, query, tempUUID, userId)
+	if rowsAffected := updateSQLCmd.RowsAffected(); err != nil {
+		golog.Error(query, err)
+	} else if rowsAffected == 0 {
+		golog.Infof("Tentative de génération de token CariTaxi infructueuse. L'utilisateur %d n'existe pas ou n'est pas actif !", userId)
 	} else if rowsAffected == 1 {
 		token = tempUUID
 	}

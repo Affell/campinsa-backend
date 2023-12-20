@@ -3,8 +3,8 @@ package config
 import (
 	"context"
 	"os"
-	"oui/auth"
 	"oui/models/shotgun"
+	"oui/models/user"
 
 	"github.com/go-redis/redis/v8"
 )
@@ -21,14 +21,21 @@ func InitRedis() (redisConfig Redis) {
 		redisConfig.URL = "localhost:6379"
 	}
 
+	if env := os.Getenv("REDIS_PASSWORD"); env != "" {
+		redisConfig.Password = env
+	} else {
+		redisConfig.Password = ""
+	}
+
 	ctx := context.Background()
 
-	auth.UserTokenRedisConn = redis.NewClient(&redis.Options{
-		Addr: redisConfig.URL,
-		DB:   0,
+	user.UserTokenRedisConn = redis.NewClient(&redis.Options{
+		Addr:     redisConfig.URL,
+		DB:       0,
+		Password: redisConfig.Password,
 	})
-	auth.UserTokenRedisCtx = context.Background()
-	auth.UserTokenRedisConn.FlushAll(ctx)
+	user.UserTokenRedisCtx = context.Background()
+	user.UserTokenRedisConn.FlushAll(ctx)
 
 	shotgun.RedisConn = redis.NewClient(&redis.Options{
 		Addr: redisConfig.URL,

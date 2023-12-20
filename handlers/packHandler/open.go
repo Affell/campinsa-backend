@@ -1,13 +1,13 @@
 package packHandler
 
 import (
-	"oui/auth"
 	"oui/models/membre"
+	"oui/models/user"
 
 	"github.com/kataras/iris/v12"
 )
 
-func openPack(token auth.UserToken, packToken string) (code int, data interface{}) {
+func openPack(token user.UserToken, packToken string) (code int, data interface{}) {
 
 	m := membre.GetRandomMember()
 	if m.Id != -1 {

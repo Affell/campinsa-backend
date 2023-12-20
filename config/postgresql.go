@@ -53,12 +53,14 @@ func InitPgSQL() (context.Context, *pgx.ConnConfig) {
 	defer sqlCo.Close(context.Background())
 
 	query := `
+	CREATE EXTENSION IF NOT EXISTS pgcrypto;
 	CREATE TABLE IF NOT EXISTS account (
 		id 					SERIAL,
 		firstname 	TEXT NOT NULL,
 		lastname 		TEXT NOT NULL,
 		email 			TEXT NOT NULL UNIQUE,
 		password 		TEXT,
+		taxi_token 	VARCHAR(36) UNIQUE,
 		reset_token VARCHAR(36),
 		PRIMARY KEY(id)
 	);

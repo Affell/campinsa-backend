@@ -1,17 +1,17 @@
 package packHandler
 
 import (
-	"oui/auth"
 	"oui/models"
+	"oui/models/user"
 
 	"github.com/kataras/iris/v12"
 )
 
 func HandleRequest(c iris.Context, route models.Route) {
 
-	var token auth.UserToken
+	var token user.UserToken
 	if t := c.GetID(); t != nil {
-		token = t.(auth.UserToken)
+		token = t.(user.UserToken)
 	} else {
 		c.StopWithStatus(iris.StatusUnauthorized)
 		//TODO return

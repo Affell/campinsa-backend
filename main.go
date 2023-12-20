@@ -6,6 +6,7 @@ import (
 	"oui/auth"
 	"oui/config"
 	"oui/handlers"
+	"oui/handlers/ws"
 	"oui/models/shotgun"
 	"strings"
 	"time"
@@ -34,11 +35,12 @@ func main() {
 
 	crs := cors.New(cors.Options{
 		AllowedOrigins:   []string{"*"},
-		AllowedHeaders:   []string{"Content-Type", "Content-Lenght", "Accept-Encoding", "X-CSRF-Token", "accept", "origin", "Cache-Control", "X-Requested-With", auth.TokenKeyName},
+		AllowedHeaders:   []string{"*"},
 		AllowedMethods:   []string{"POST", "GET", "DELETE"},
 		AllowCredentials: true,
 	})
 	router.UseRouter(crs)
+	router.AllowMethods(iris.MethodOptions)
 	router.Use(iris.Compression)
 
 	router.Get("/favicon.ico", iris.Cache(30*time.Second), handlers.FaviconHandler(Folder))
@@ -46,6 +48,10 @@ func main() {
 	router.Get("/", iris.Cache(15*time.Second), handlers.IndexHandler)
 
 	router.HandleDir("/img", handlers.FileHandler(Folder, "public/img"), iris.DirOptions{IndexName: "/img", Compress: true})
+
+	wsRouter := ws.NewRouter()
+	wsRouter.On("currentLocation", ws.OnCurrentLocation)
+	router.Any("/caritaxi/{token}", wsRouter.ServeHTTP)
 
 	router.Use(auth.AuthRequired())
 	{

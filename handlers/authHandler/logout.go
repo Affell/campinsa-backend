@@ -1,8 +1,8 @@
 package authHandler
 
 import (
-	"oui/auth"
 	"oui/models"
+	"oui/models/user"
 
 	"github.com/kataras/golog"
 	"github.com/kataras/iris/v12"
@@ -17,13 +17,13 @@ func Logout(c iris.Context, route models.Route) {
 
 	var id string
 	if t := c.GetID(); t != nil {
-		id = t.(auth.UserToken).TokenID
+		id = t.(user.UserToken).TokenID
 	} else {
 		c.StopWithJSON(iris.StatusUnauthorized, iris.Map{"message": "Invalid session"})
 		return
 	}
 
-	if ok := auth.RevokeUserToken(id); ok {
+	if ok := user.RevokeUserToken(id); ok {
 		c.StopWithJSON(iris.StatusCreated, iris.Map{"message": "You are no longer connected"})
 	} else {
 		golog.Error("impossible de déconnecter l'utilisateur")

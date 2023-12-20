@@ -1,7 +1,6 @@
 package authHandler
 
 import (
-	"oui/auth"
 	"oui/models"
 	"oui/models/user"
 
@@ -15,9 +14,9 @@ func Me(c iris.Context, route models.Route) {
 		return
 	}
 
-	var token auth.UserToken
+	var token user.UserToken
 	if t := c.GetID(); t != nil {
-		token = t.(auth.UserToken)
+		token = t.(user.UserToken)
 	} else {
 		c.StopWithStatus(iris.StatusNotFound)
 		return
@@ -26,7 +25,7 @@ func Me(c iris.Context, route models.Route) {
 	c.Redirect("/auth/user/"+token.Email, iris.StatusPermanentRedirect)
 }
 
-func getUser(token auth.UserToken, email string) (code int, data interface{}) {
+func getUser(token user.UserToken, email string) (code int, data interface{}) {
 	u, err := user.GetUserByEmail(email)
 	if err == "" {
 		code = iris.StatusOK

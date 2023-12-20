@@ -1,7 +1,6 @@
 package authHandler
 
 import (
-	"oui/auth"
 	"oui/models"
 	"oui/models/user"
 
@@ -22,7 +21,7 @@ func Login(c iris.Context, route models.Route) {
 		return
 	}
 
-	var CurrentUserToken auth.UserToken
+	var CurrentUserToken user.UserToken
 	var err error
 	if loginForm.Token == "" && loginForm.Password != "" && loginForm.Username != "" {
 		CurrentUserToken, err = user.GetSQLUserToken(loginForm.Username, loginForm.Password)
@@ -31,7 +30,7 @@ func Login(c iris.Context, route models.Route) {
 			return
 		}
 	} else if loginForm.Token != "" && loginForm.Password == "" && loginForm.Username == "" {
-		CurrentUserToken, err = auth.GetUserToken(loginForm.Token)
+		CurrentUserToken, err = user.GetUserToken(loginForm.Token)
 		if err != nil {
 			c.StopWithJSON(iris.StatusForbidden, iris.Map{"message": "Invalid token"})
 			return

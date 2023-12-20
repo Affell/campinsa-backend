@@ -2,6 +2,7 @@ package auth
 
 import (
 	"oui/models/exceptions"
+	"oui/models/user"
 
 	"github.com/kataras/iris/v12"
 )
@@ -19,7 +20,8 @@ type RouteVars struct {
 }
 
 type Header struct {
-	TokenID string `header:"Oui-Connect-Token,required"`
+	TokenID     string `header:"Oui-Connect-Token"`
+	TaxiTokenID string `header:"CariTaxi-Connect-Token"`
 }
 
 func AuthRequired() func(iris.Context) {
@@ -31,7 +33,7 @@ func AuthRequired() func(iris.Context) {
 			return
 		}
 
-		Token, err := GetUserToken(header.TokenID)
+		Token, err := user.GetUserToken(header.TokenID)
 		if err != nil {
 			c.Next()
 			return
@@ -46,4 +48,20 @@ func AuthRequired() func(iris.Context) {
 		c.SetID(Token)
 		c.Next()
 	}
+}
+
+func CheckTaxiAuth(c iris.Context) (connected bool) {
+
+	var header Header
+	if err := c.ReadHeaders(&header); err != nil || len(header.TaxiTokenID) != 36 {
+		return
+	}
+
+	user, err := user.GetUserByTaxiToken(header.TaxiTokenID)
+	if err != nil {
+		return
+	}
+
+	c.SetID(user)
+	return true
 }

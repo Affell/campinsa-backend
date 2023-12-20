@@ -1,7 +1,6 @@
 package shotgunHandler
 
 import (
-	"oui/auth"
 	"oui/models"
 	"oui/models/shotgun"
 	"oui/models/user"
@@ -12,9 +11,9 @@ import (
 
 func List(c iris.Context, route models.Route) {
 
-	var token auth.UserToken
+	var token user.UserToken
 	if t := c.GetID(); t != nil {
-		token = t.(auth.UserToken)
+		token = t.(user.UserToken)
 	}
 
 	data := struct {

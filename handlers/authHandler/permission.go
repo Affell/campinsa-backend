@@ -1,7 +1,6 @@
 package authHandler
 
 import (
-	"oui/auth"
 	"oui/models"
 	"oui/models/user"
 
@@ -22,9 +21,9 @@ func Permission(ctx iris.Context, route models.Route) {
 
 	var result bool
 
-	var token auth.UserToken
+	var token user.UserToken
 	if t := ctx.GetID(); t != nil {
-		token = t.(auth.UserToken)
+		token = t.(user.UserToken)
 
 		result = user.HasPermission(token.ID, queries.Permission)
 	} else {
