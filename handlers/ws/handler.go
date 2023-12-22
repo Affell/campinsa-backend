@@ -3,14 +3,13 @@ package ws
 import (
 	"net/http"
 	"oui/models/user"
-	"sync"
 
 	"github.com/gorilla/websocket"
 	"github.com/kataras/golog"
 	"github.com/kataras/iris/v12"
 )
 
-var TaxiUsers sync.Map
+var TaxiUsers map[int64]*Client = make(map[int64]*Client)
 
 type Handler func(*Client, interface{})
 
@@ -29,6 +28,7 @@ func NewRouter() *Router {
 func (rt *Router) ServeHTTP(c iris.Context) {
 	r := c.Request()
 	w := c.ResponseWriter()
+	var u user.User
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
@@ -38,14 +38,17 @@ func (rt *Router) ServeHTTP(c iris.Context) {
 				golog.Debug("No token in header")
 				return false
 			}
-			var u user.User
 			var err error
 			if u, err = user.GetUserByTaxiToken(token); err != nil {
 				golog.Debug("Invalid token in websocket : %v", err)
 				return false
 			}
 
-			TaxiUsers.Store(c.GetID(), u)
+			if old, ok := TaxiUsers[u.ID]; ok {
+				old.socket.Close()
+				old.Location = NilLocation()
+			}
+
 			return true
 		},
 	}
@@ -56,17 +59,8 @@ func (rt *Router) ServeHTTP(c iris.Context) {
 		return
 	}
 
-	data, ok := TaxiUsers.LoadAndDelete(c.GetID())
-	if !ok {
-		golog.Error("Unable to load TaxiUser infos")
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	client := NewClient(socket, rt.FindHandler)
-	u := data.(user.User)
-	client.User = u
-	TaxiUsers.Store(c.GetID(), client)
+	client := NewClient(socket, rt.FindHandler, u)
+	TaxiUsers[u.ID] = client
 
 	client.Read()
 }

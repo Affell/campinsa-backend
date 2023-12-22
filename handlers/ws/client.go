@@ -21,10 +21,11 @@ type Client struct {
 	Location    Location
 }
 
-func NewClient(socket *websocket.Conn, findHandler FindHandler) *Client {
+func NewClient(socket *websocket.Conn, findHandler FindHandler, user user.User) *Client {
 	return &Client{
 		socket:      socket,
 		findHandler: findHandler,
+		User:        user,
 	}
 }
 
@@ -46,6 +47,8 @@ func (c *Client) Read() {
 			handler(c, msg.Data)
 		}
 	}
+
+	delete(TaxiUsers, c.User.ID)
 
 	c.socket.Close()
 }

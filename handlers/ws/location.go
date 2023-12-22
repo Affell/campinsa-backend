@@ -14,17 +14,24 @@ type LocationInfo struct {
 	Location Location `json:"location"`
 }
 
+func NilLocation() (l Location) { return }
+
 func OnCurrentLocation(c *Client, data interface{}) {
 	jsonString, _ := json.Marshal(data)
 	c.Location = Location{}
 	json.Unmarshal(jsonString, &c.Location)
+}
+
+func OnAskTaxiLocation(c *Client, data interface{}) {
 	taxiLocation := make([]LocationInfo, 0)
-	TaxiUsers.Range(func(key, c any) bool {
-		client := c.(*Client)
-		if client != c {
+	for _, client := range TaxiUsers {
+		if client != c && client.Location != NilLocation() {
 			taxiLocation = append(taxiLocation, LocationInfo{client.User.Firstname + " " + client.User.Lastname, client.Location})
 		}
-		return true
-	})
+	}
 	c.Send("taxiLocation", taxiLocation)
+}
+
+func OnStopLocation(c *Client, data interface{}) {
+	TaxiUsers[c.User.ID].Location = NilLocation()
 }
