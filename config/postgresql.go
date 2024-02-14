@@ -104,6 +104,20 @@ func InitPgSQL() (context.Context, *pgx.ConnConfig) {
 		pays TEXT NOT NULL,
 		PRIMARY KEY(id)
 	);
+	CREATE TABLE IF NOT EXISTS ride
+	(
+		id SERIAL,
+		operator bigint NOT NULL,
+		taxi bigint,
+		clientName VARCHAR(32),
+		clientNumber VARCHAR(12),
+		latitudeStart NUMERIC(3, 8),
+		longitudeStart NUMERIC(3, 8),
+		latitudeEnd NUMERIC(3, 8),
+		longitudeEnd NUMERIC(3, 8),
+		PRIMARY KEY(id),
+		FOREIGN KEY(operator) REFERENCES account(id)
+	);
 	`
 
 	_, err = sqlCo.Exec(context.Background(), query)

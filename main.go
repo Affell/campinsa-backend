@@ -53,6 +53,7 @@ func main() {
 	wsRouter.On("currentLocation", ws.OnCurrentLocation)
 	wsRouter.On("askTaxiLocation", ws.OnAskTaxiLocation)
 	wsRouter.On("stopLocation", ws.OnStopLocation)
+	wsRouter.On("newRide", ws.OnNewRide)
 	router.Any("/ws/caritaxi/{token}", wsRouter.ServeHTTP)
 
 	router.Use(auth.AuthRequired())
