@@ -17,9 +17,8 @@ func (ride *Ride) UpsertPgSQL() (success bool) {
 	defer sqlCo.Close(postgresql.SQLCtx)
 
 	if ride.ID == 0 {
-		ride.ID = time.Now().UnixNano()
+		ride.ID = time.Now().UnixMilli()
 	}
-
 	query := "INSERT INTO ride (id, operator, taxi, clientName, clientNumber, latitudeStart, longitudeStart, latitudeEnd, longitudeEnd) " +
 		"VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) " +
 		"ON CONFLICT (id) do " +
