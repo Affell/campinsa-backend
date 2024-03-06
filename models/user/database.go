@@ -148,6 +148,52 @@ func GetUserById(UserId int64) (u User, err error) {
 	return
 }
 
+func GetFullNameById(ids ...interface{}) (translation map[int64]string, err error) {
+	translation = make(map[int64]string)
+
+	sqlCo, err := pgx.ConnectConfig(postgresql.SQLCtx, postgresql.SQLConn)
+	if err != nil {
+		return
+	}
+	defer sqlCo.Close(postgresql.SQLCtx)
+
+	var idsFormatted []string
+	for i := range ids {
+		idsFormatted = append(idsFormatted, fmt.Sprintf("id=$%d", i+1))
+	}
+
+	var query = "SELECT id, lastName || ' ' || firstName as fullName FROM account WHERE " + strings.Join(idsFormatted, " OR ")
+	rows, err := sqlCo.Query(postgresql.SQLCtx, query, ids...)
+	if err != nil {
+		golog.Errorf("execution query '%s':\n%s", query, err.Error())
+		return
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var (
+			id       sql.NullInt64
+			fullName sql.NullString
+		)
+
+		err = rows.Scan(
+			&id,
+			&fullName,
+		)
+
+		if err == pgx.ErrNoRows {
+			return
+		} else if err != nil {
+			golog.Errorf("psql request '%v' failed with error : %v", query, err)
+			return
+		}
+
+		translation[id.Int64] = fullName.String
+	}
+
+	return
+}
+
 func GetUserByTaxiToken(taxiToken string) (u User, err error) {
 
 	var (

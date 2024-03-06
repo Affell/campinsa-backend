@@ -2,6 +2,7 @@ package ws
 
 import (
 	"net/http"
+	"oui/models/ride"
 	"oui/models/user"
 
 	"github.com/gorilla/websocket"
@@ -62,6 +63,10 @@ func (rt *Router) ServeHTTP(c iris.Context) {
 	client := NewClient(socket, rt.FindHandler, u)
 	TaxiUsers[u.ID] = client
 
+	if ride, ok := ride.Riders[u.ID]; ok {
+		client.Send("rideAnswer", map[string]interface{}{"success": true, "ride": ride})
+	}
+
 	client.Read()
 }
 
@@ -72,4 +77,10 @@ func (rt *Router) FindHandler(event Event) (Handler, bool) {
 
 func (rt *Router) On(event Event, handler Handler) {
 	rt.rules[event] = handler
+}
+
+func Broadcast(name string, data interface{}) {
+	for _, c := range TaxiUsers {
+		c.Send(name, data)
+	}
 }

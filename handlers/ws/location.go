@@ -2,7 +2,6 @@ package ws
 
 import (
 	"encoding/json"
-	"oui/models/ride"
 )
 
 type Location struct {
@@ -35,13 +34,4 @@ func OnAskTaxiLocation(c *Client, data interface{}) {
 
 func OnStopLocation(c *Client, data interface{}) {
 	TaxiUsers[c.User.ID].Location = NilLocation()
-}
-
-func OnNewRide(c *Client, data interface{}) {
-	jsonString, _ := json.Marshal(data)
-	var r ride.Ride
-	json.Unmarshal(jsonString, &r)
-	r.Operator = c.User.ID
-	ok := r.UpsertPgSQL()
-	c.Send("newRide", map[string]interface{}{"success": ok})
 }

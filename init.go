@@ -5,13 +5,13 @@ import (
 	"time"
 
 	"oui/models/postgresql"
+	"oui/models/ride"
 
 	"github.com/kataras/golog"
 	"github.com/provectio/godotenv"
 )
 
 func init() {
-	// Load Env vars from .env if exist
 	err := godotenv.Load()
 	if err != nil {
 		golog.Warn("No .env file to load")
@@ -23,5 +23,6 @@ func init() {
 	postgresql.SQLCtx, postgresql.SQLConn = config.InitPgSQL()
 	config.Cfg.Email = config.InitEmailConfig(Folder)
 	config.Cfg.Redis = config.InitRedis()
+	ride.Init()
 	golog.Debug("init success in " + time.Since(config.Cfg.App.StartedTime).String())
 }
