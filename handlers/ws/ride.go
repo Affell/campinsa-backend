@@ -16,8 +16,10 @@ func OnNewRide(c *Client, data interface{}) {
 	m := map[string]interface{}{"success": ok}
 	if ok {
 		m["ride"] = r.ToAppDetails()
+		Broadcast("newRide", m)
+	} else {
+		c.Send("newRide", m)
 	}
-	Broadcast("newRide", m)
 }
 
 func RetrieveRides(c *Client, data interface{}) {
