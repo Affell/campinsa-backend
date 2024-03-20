@@ -18,11 +18,13 @@ type Event string
 
 type Router struct {
 	rules map[Event]Handler
+	auth  bool
 }
 
-func NewRouter() *Router {
+func NewRouter(auth bool) *Router {
 	return &Router{
 		rules: make(map[Event]Handler),
+		auth:  auth,
 	}
 }
 
@@ -34,22 +36,24 @@ func (rt *Router) ServeHTTP(c iris.Context) {
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
 		CheckOrigin: func(r *http.Request) bool {
-			token := c.Params().GetDefault("token", "").(string)
-			if token == "" {
-				golog.Debug("No token in header")
-				return false
-			}
-			var err error
-			if u, err = user.GetUserByTaxiToken(token); err != nil {
-				golog.Debug("Invalid token in websocket : %v", err)
-				return false
-			}
+			if rt.auth {
+				token := c.Params().GetDefault("token", "").(string)
+				if token == "" {
+					golog.Debug("No token in header")
+					return false
+				}
+				var err error
+				if u, err = user.GetUserByTaxiToken(token); err != nil {
+					golog.Debug("Invalid token in websocket : %v", err)
+					return false
+				}
 
-			if old, ok := TaxiUsers[u.ID]; ok {
-				old.socket.Close()
-				old.Location = NilLocation()
+				if old, ok := TaxiUsers[u.ID]; ok {
+					old.Send("terminated", nil)
+					old.socket.Close()
+					old.Location = NilLocation()
+				}
 			}
-
 			return true
 		},
 	}
@@ -61,10 +65,12 @@ func (rt *Router) ServeHTTP(c iris.Context) {
 	}
 
 	client := NewClient(socket, rt.FindHandler, u)
-	TaxiUsers[u.ID] = client
+	if rt.auth {
+		TaxiUsers[u.ID] = client
 
-	if ride, ok := ride.Riders[u.ID]; ok {
-		client.Send("rideAnswer", map[string]interface{}{"success": true, "ride": ride})
+		if ride, ok := ride.Riders[u.ID]; ok {
+			client.Send("rideAnswer", map[string]interface{}{"success": true, "ride": ride})
+		}
 	}
 
 	client.Read()

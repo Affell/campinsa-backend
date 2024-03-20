@@ -35,3 +35,13 @@ func OnAskTaxiLocation(c *Client, data interface{}) {
 func OnStopLocation(c *Client, data interface{}) {
 	TaxiUsers[c.User.ID].Location = NilLocation()
 }
+
+func OnWebUpdateTaxiLocation(c *Client, data interface{}) {
+	taxiLocation := make([]LocationInfo, 0)
+	for _, client := range TaxiUsers {
+		if client != c && client.Location != NilLocation() {
+			taxiLocation = append(taxiLocation, LocationInfo{client.User.Firstname + " " + client.User.Lastname, client.Location})
+		}
+	}
+	c.Send("updateTaxiLocation", taxiLocation)
+}
