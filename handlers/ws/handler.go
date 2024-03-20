@@ -49,7 +49,6 @@ func (rt *Router) ServeHTTP(c iris.Context) {
 				}
 
 				if old, ok := TaxiUsers[u.ID]; ok {
-					old.Send("terminated", nil)
 					old.socket.Close()
 					old.Location = NilLocation()
 				}
