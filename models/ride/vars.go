@@ -17,6 +17,7 @@ type Ride struct {
 	ClientNumber string `json:"client_number" structs:"client_number"`
 	Start        LatLng `json:"start" structs:"start"`
 	End          LatLng `json:"end" structs:"end"`
+	Task         string `json:"task" structs:"task"`
 	OperatorName string `json:"operator_name" structs:"operator_name"`
 	TaxiName     string `json:"taxi_name" structs:"taxi_name"`
 }

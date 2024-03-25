@@ -118,6 +118,7 @@ func InitPgSQL() (context.Context, *pgx.ConnConfig) {
 		endName VARCHAR(256),
 		latitudeEnd NUMERIC(11, 8),
 		longitudeEnd NUMERIC(11, 8),
+		task VARCHAR(128),
 		PRIMARY KEY(id),
 		FOREIGN KEY(operator) REFERENCES account(id)
 	);

@@ -2,57 +2,38 @@ package ws
 
 import (
 	"net/http"
-	"oui/models/ride"
-	"oui/models/user"
 
 	"github.com/gorilla/websocket"
-	"github.com/kataras/golog"
 	"github.com/kataras/iris/v12"
 )
 
 var TaxiUsers map[int64]*Client = make(map[int64]*Client)
 
-type Handler func(*Client, interface{})
+type HandlerDesc struct {
+	HandlerFunc  HandlerFunc
+	AuthRequired bool
+}
+type HandlerFunc func(*Client, interface{})
 
 type Event string
 
 type Router struct {
-	rules map[Event]Handler
-	auth  bool
+	rules map[Event]HandlerDesc
 }
 
-func NewRouter(auth bool) *Router {
+func NewRouter() *Router {
 	return &Router{
-		rules: make(map[Event]Handler),
-		auth:  auth,
+		rules: make(map[Event]HandlerDesc),
 	}
 }
 
 func (rt *Router) ServeHTTP(c iris.Context) {
 	r := c.Request()
 	w := c.ResponseWriter()
-	var u user.User
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
 		CheckOrigin: func(r *http.Request) bool {
-			if rt.auth {
-				token := c.Params().GetDefault("token", "").(string)
-				if token == "" {
-					golog.Debug("No token in header")
-					return false
-				}
-				var err error
-				if u, err = user.GetUserByTaxiToken(token); err != nil {
-					golog.Debug("Invalid token in websocket : %v", err)
-					return false
-				}
-
-				if old, ok := TaxiUsers[u.ID]; ok {
-					old.socket.Close()
-					old.Location = NilLocation()
-				}
-			}
 			return true
 		},
 	}
@@ -63,29 +44,24 @@ func (rt *Router) ServeHTTP(c iris.Context) {
 		return
 	}
 
-	client := NewClient(socket, rt.FindHandler, u)
-	if rt.auth {
-		TaxiUsers[u.ID] = client
-
-		if ride, ok := ride.Riders[u.ID]; ok {
-			client.Send("rideAnswer", map[string]interface{}{"success": true, "ride": ride})
-		}
-	}
-
+	client := NewClient(socket, rt.FindHandler)
+	client.Send("mode", nil)
 	client.Read()
 }
 
-func (rt *Router) FindHandler(event Event) (Handler, bool) {
+func (rt *Router) FindHandler(event Event) (HandlerDesc, bool) {
 	handler, found := rt.rules[event]
 	return handler, found
 }
 
-func (rt *Router) On(event Event, handler Handler) {
-	rt.rules[event] = handler
+func (rt *Router) On(event Event, handler HandlerFunc, authenticated bool) {
+	rt.rules[event] = HandlerDesc{HandlerFunc: handler, AuthRequired: authenticated}
 }
 
-func Broadcast(name string, data interface{}) {
+func Broadcast(name string, data interface{}, auth bool) {
 	for _, c := range TaxiUsers {
-		c.Send(name, data)
+		if !auth || c.User.ID != -1 {
+			c.Send(name, data)
+		}
 	}
 }

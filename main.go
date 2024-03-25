@@ -49,19 +49,16 @@ func main() {
 
 	router.HandleDir("/img", handlers.FileHandler(Folder, "public/img"), iris.DirOptions{IndexName: "/img", Compress: true})
 
-	cariTaxiWsRouter := ws.NewRouter(true)
-	cariTaxiWsRouter.On("currentLocation", ws.OnCurrentLocation)
-	cariTaxiWsRouter.On("askTaxiLocation", ws.OnAskTaxiLocation)
-	cariTaxiWsRouter.On("stopLocation", ws.OnStopLocation)
-	cariTaxiWsRouter.On("newRide", ws.OnNewRide)
-	cariTaxiWsRouter.On("rides", ws.RetrieveRides)
-	cariTaxiWsRouter.On("rideAnswer", ws.OnRideAnswer)
-	cariTaxiWsRouter.On("rideCompleted", ws.OnRideCompleted)
-	router.Any("/ws/caritaxi/{token}", cariTaxiWsRouter.ServeHTTP)
-
-	webWsRouter := ws.NewRouter(false)
-	webWsRouter.On("updateTaxiLocation", ws.OnWebUpdateTaxiLocation)
-	router.Any("/ws/web", webWsRouter.ServeHTTP)
+	wsRouter := ws.NewRouter()
+	wsRouter.On("mode", ws.OnMode, false)
+	wsRouter.On("currentLocation", ws.OnCurrentLocation, true)
+	wsRouter.On("askTaxiLocation", ws.OnAskTaxiLocation, false)
+	wsRouter.On("stopLocation", ws.OnStopLocation, true)
+	wsRouter.On("newRide", ws.OnNewRide, true)
+	wsRouter.On("rides", ws.RetrieveRides, true)
+	wsRouter.On("rideAnswer", ws.OnRideAnswer, true)
+	wsRouter.On("rideCompleted", ws.OnRideCompleted, true)
+	router.Any("/ws/caritaxi", wsRouter.ServeHTTP)
 
 	router.Use(auth.AuthRequired())
 	{

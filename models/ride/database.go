@@ -40,11 +40,11 @@ func (ride *Ride) UpsertPgSQL() (success bool) {
 	if ride.ID == 0 {
 		ride.ID = time.Now().UnixMilli()
 	}
-	query := "INSERT INTO ride (id, operator, taxi, completed, clientName, clientNumber, startName, latitudeStart, longitudeStart, endName, latitudeEnd, longitudeEnd) " +
-		"VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) " +
+	query := "INSERT INTO ride (id, operator, taxi, completed, clientName, clientNumber, startName, latitudeStart, longitudeStart, endName, latitudeEnd, longitudeEnd, task) " +
+		"VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) " +
 		"ON CONFLICT (id) do " +
-		"UPDATE set (operator, taxi, completed, clientName, clientNumber, startName, latitudeStart, longitudeStart, endName, latitudeEnd, longitudeEnd) = " +
-		"($2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)"
+		"UPDATE set (operator, taxi, completed, clientName, clientNumber, startName, latitudeStart, longitudeStart, endName, latitudeEnd, longitudeEnd, task) = " +
+		"($2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)"
 
 	args := []interface{}{
 		ride.ID,
@@ -59,6 +59,7 @@ func (ride *Ride) UpsertPgSQL() (success bool) {
 		ride.End.Name,
 		ride.End.Latitude,
 		ride.End.Longitude,
+		ride.Task,
 	}
 
 	_, err = sqlCo.Exec(postgresql.SQLCtx, query, args...)
@@ -74,7 +75,7 @@ func ScanRide(row pgx.Row) (ride Ride) {
 	var (
 		id, operator, taxi                                       sql.NullInt64
 		completed                                                sql.NullBool
-		clientName, clientNumber, startName, endName             sql.NullString
+		clientName, clientNumber, startName, endName, task       sql.NullString
 		latitudeStart, longitudeStart, latitudeEnd, longitudeEnd sql.NullFloat64
 	)
 
@@ -91,6 +92,7 @@ func ScanRide(row pgx.Row) (ride Ride) {
 		&endName,
 		&latitudeEnd,
 		&longitudeEnd,
+		&task,
 	)
 	if err != nil {
 		return Ride{}
@@ -113,6 +115,7 @@ func ScanRide(row pgx.Row) (ride Ride) {
 			Longitude: longitudeEnd.Float64,
 			Name:      endName.String,
 		},
+		Task: task.String,
 	}
 }
 
@@ -123,7 +126,7 @@ func GetAllRides() (rides []Ride) {
 	}
 	defer conn.Close(postgresql.SQLCtx)
 
-	query := "SELECT id, operator, taxi, completed, clientName, clientNumber, startName, latitudeStart, longitudeStart, endName, latitudeEnd, longitudeEnd FROM ride"
+	query := "SELECT id, operator, taxi, completed, clientName, clientNumber, startName, latitudeStart, longitudeStart, endName, latitudeEnd, longitudeEnd, task FROM ride"
 	rows, err := conn.Query(postgresql.SQLCtx, query)
 	if err != nil {
 		return
@@ -148,7 +151,7 @@ func GetRideByID(id int64) (ride Ride, err error) {
 	}
 	defer conn.Close(postgresql.SQLCtx)
 
-	query := "SELECT id, operator, taxi, completed, clientName, clientNumber, startName, latitudeStart, longitudeStart, endName, latitudeEnd, longitudeEnd FROM ride WHERE id=$1"
+	query := "SELECT id, operator, taxi, completed, clientName, clientNumber, startName, latitudeStart, longitudeStart, endName, latitudeEnd, longitudeEnd, task FROM ride WHERE id=$1"
 	row := conn.QueryRow(postgresql.SQLCtx, query, id)
 	ride = ScanRide(row)
 	ride.TranslateRideIds()
@@ -166,7 +169,7 @@ func LoadRiders() {
 	}
 	defer conn.Close(postgresql.SQLCtx)
 
-	query := "SELECT id, operator, taxi, completed, clientName, clientNumber, startName, latitudeStart, longitudeStart, endName, latitudeEnd, longitudeEnd FROM ride WHERE NOT completed AND taxi IS NOT NULL"
+	query := "SELECT id, operator, taxi, completed, clientName, clientNumber, startName, latitudeStart, longitudeStart, endName, latitudeEnd, longitudeEnd, task FROM ride WHERE NOT completed AND taxi IS NOT NULL"
 	rows, err := conn.Query(postgresql.SQLCtx, query)
 	if err != nil {
 		return

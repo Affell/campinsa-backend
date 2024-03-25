@@ -4,19 +4,22 @@ import (
 	"encoding/json"
 	"oui/models/ride"
 	"strconv"
+
+	"github.com/kataras/golog"
 )
 
 func OnNewRide(c *Client, data interface{}) {
 	jsonString, _ := json.Marshal(data)
 	var r ride.Ride
 	json.Unmarshal(jsonString, &r)
+	golog.Debug(r)
 	r.Operator = c.User.ID
 	r.TranslateRideIds()
 	ok := r.UpsertPgSQL()
 	m := map[string]interface{}{"success": ok}
 	if ok {
 		m["ride"] = r.ToAppDetails()
-		Broadcast("newRide", m)
+		Broadcast("newRide", m, true)
 	} else {
 		c.Send("newRide", m)
 	}
@@ -53,7 +56,7 @@ func OnRideAnswer(c *Client, data interface{}) {
 		r.TranslateRideIds()
 		ride.Riders[c.User.ID] = r
 		c.Send("rideAnswer", map[string]interface{}{"success": true, "ride": r})
-		Broadcast("updateRide", map[string]interface{}{"ride": r})
+		Broadcast("updateRide", map[string]interface{}{"ride": r}, true)
 	}
 }
 
@@ -75,6 +78,6 @@ func OnRideCompleted(c *Client, data interface{}) {
 		r.UpsertPgSQL()
 		delete(ride.Riders, c.User.ID)
 		c.Send("rideCompleted", map[string]interface{}{"success": true})
-		Broadcast("updateRide", map[string]interface{}{"ride": r})
+		Broadcast("updateRide", map[string]interface{}{"ride": r}, true)
 	}
 }

@@ -12,7 +12,7 @@ type Message struct {
 	Data interface{} `json:"data"`
 }
 
-type FindHandler func(Event) (Handler, bool)
+type FindHandler func(Event) (HandlerDesc, bool)
 
 type Client struct {
 	socket      *websocket.Conn
@@ -21,11 +21,10 @@ type Client struct {
 	Location    Location
 }
 
-func NewClient(socket *websocket.Conn, findHandler FindHandler, user user.User) *Client {
+func NewClient(socket *websocket.Conn, findHandler FindHandler) *Client {
 	return &Client{
 		socket:      socket,
 		findHandler: findHandler,
-		User:        user,
 	}
 }
 
@@ -43,8 +42,8 @@ func (c *Client) Read() {
 		if err := c.socket.ReadJSON(&msg); err != nil {
 			break
 		}
-		if handler, found := c.findHandler(Event(msg.Name)); found {
-			handler(c, msg.Data)
+		if handlerDesc, found := c.findHandler(Event(msg.Name)); found && (c.User.ID != -1 || !handlerDesc.AuthRequired) {
+			handlerDesc.HandlerFunc(c, msg.Data)
 		}
 	}
 
