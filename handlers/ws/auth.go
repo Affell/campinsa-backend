@@ -33,6 +33,7 @@ func OnMode(c *Client, data interface{}) {
 	}
 
 	if old, ok := TaxiUsers[u.ID]; ok && old.socket != c.socket {
+		old.Send("close", nil)
 		old.socket.Close()
 		old.Location = NilLocation()
 	}
