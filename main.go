@@ -51,6 +51,7 @@ func main() {
 
 	wsRouter := ws.NewRouter()
 	wsRouter.On("mode", ws.OnMode, false)
+	wsRouter.On("planning", ws.OnPlanning, true)
 	wsRouter.On("currentLocation", ws.OnCurrentLocation, true)
 	wsRouter.On("askTaxiLocation", ws.OnAskTaxiLocation, false)
 	wsRouter.On("stopLocation", ws.OnStopLocation, true)

@@ -3,6 +3,7 @@ package ws
 import (
 	"encoding/json"
 	"os"
+	"oui/models/planning"
 	"oui/models/ride"
 	"oui/models/user"
 )
@@ -45,4 +46,12 @@ func OnMode(c *Client, data interface{}) {
 	}
 
 	c.Send("authenticated", nil)
+}
+
+func OnPlanning(c *Client, data interface{}) {
+	if p, ok := planning.GlobalPlanning[c.User.ID]; ok {
+		c.Send("planning", map[string]interface{}{"success": true, "planning": p})
+	} else {
+		c.Send("planning", map[string]interface{}{"success": false})
+	}
 }

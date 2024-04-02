@@ -2,10 +2,10 @@ package main
 
 import (
 	"oui/config"
-	"time"
-
+	"oui/models/planning"
 	"oui/models/postgresql"
 	"oui/models/ride"
+	"time"
 
 	"github.com/kataras/golog"
 	"github.com/provectio/godotenv"
@@ -24,5 +24,6 @@ func init() {
 	config.Cfg.Email = config.InitEmailConfig(Folder)
 	config.Cfg.Redis = config.InitRedis()
 	ride.Init()
+	planning.InitPlanning()
 	golog.Debug("init success in " + time.Since(config.Cfg.App.StartedTime).String())
 }

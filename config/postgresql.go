@@ -75,35 +75,6 @@ func InitPgSQL() (context.Context, *pgx.ConnConfig) {
 		ended 				boolean DEFAULT FALSE,
 		PRIMARY KEY(id)
 	);
-	CREATE TABLE IF NOT EXISTS role
-	(  	id                	bigint 				NOT NULL,
-			name              	VARCHAR(36) 	NOT NULL UNIQUE,
-			PRIMARY KEY(id)
-	);
-	CREATE TABLE IF NOT EXISTS role_permission
-	(  	role          bigint 				NOT NULL,
-			permission    VARCHAR(200) 	NOT NULL,
-			FOREIGN KEY(role) REFERENCES role(id) ON DELETE CASCADE,
-			PRIMARY KEY(role, permission)
-	);
-	CREATE TABLE IF NOT EXISTS account_permission
-	(  	account      bigint 				NOT NULL,
-			permission   VARCHAR(200) 	NOT NULL,
-			FOREIGN KEY(account) REFERENCES account(id) ON DELETE CASCADE,
-			PRIMARY KEY(account, permission)
-	);
-	CREATE TABLE IF NOT EXISTS membre
-	(
-		id SERIAL,
-		firstname VARCHAR(32) NOT NULL,
-		lastname VARCHAR(32) NOT NULL,
-		surname VARCHAR(32) NOT NULL,
-		score INTEGER DEFAULT 0,
-		image TEXT NOT NULL,
-		poste VARCHAR(32) NOT NULL,
-		pays TEXT NOT NULL,
-		PRIMARY KEY(id)
-	);
 	CREATE TABLE IF NOT EXISTS ride
 	(
 		id bigint NOT NULL,
