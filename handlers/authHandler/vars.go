@@ -12,7 +12,6 @@ var (
 	Handlers models.HandlerMap = models.HandlerMap{
 		"login":      Login,
 		"logout":     Logout,
-		"recover":    Recover,
 		"me":         Me,
 		"permission": Permission,
 	}

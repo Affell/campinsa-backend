@@ -9,7 +9,7 @@ import (
 
 func Login(c iris.Context, route models.Route) {
 
-	if c.Method() != "POST" || route.Tertiary != "" || len(route.Tail) != 0 {
+	if c.Method() != "POST" || route.Secondary != "" {
 		c.StopWithStatus(iris.StatusNotFound)
 		return
 	}

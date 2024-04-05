@@ -6,7 +6,8 @@ const Service = "taxi"
 
 var (
 	Handlers models.HandlerMap = models.HandlerMap{
-		"login": Login,
+		"login":    Login,
+		"download": Download,
 	}
 )
 

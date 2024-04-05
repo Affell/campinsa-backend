@@ -21,7 +21,6 @@ func init() {
 	golog.SetLevel(config.Cfg.App.DebugLevel)
 
 	postgresql.SQLCtx, postgresql.SQLConn = config.InitPgSQL()
-	config.Cfg.Email = config.InitEmailConfig(Folder)
 	config.Cfg.Redis = config.InitRedis()
 	ride.Init()
 	planning.InitPlanning()
