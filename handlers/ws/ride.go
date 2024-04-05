@@ -4,15 +4,12 @@ import (
 	"encoding/json"
 	"oui/models/ride"
 	"strconv"
-
-	"github.com/kataras/golog"
 )
 
 func OnNewRide(c *Client, data interface{}) {
 	jsonString, _ := json.Marshal(data)
 	var r ride.Ride
 	json.Unmarshal(jsonString, &r)
-	golog.Debug(r)
 	r.Operator = c.User.ID
 	r.TranslateRideIds()
 	ok := r.UpsertPgSQL()

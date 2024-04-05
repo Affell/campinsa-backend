@@ -66,7 +66,6 @@ func InitPgSQL() (context.Context, *pgx.ConnConfig) {
 	);
 	CREATE TABLE IF NOT EXISTS shotgun (
 		id 						SERIAL,
-		created_time 	bigint 	NOT NULL,
 		unlock_time 	bigint 	NOT NULL,
 		form_link 		TEXT 		NOT NULL,
 		image_link 		TEXT 		NOT NULL,

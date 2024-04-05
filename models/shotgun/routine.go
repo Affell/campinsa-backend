@@ -9,7 +9,7 @@ import (
 )
 
 func LoadShotgunsIntoCache() {
-	query := "SELECT id,created_time,unlock_time,form_link,image_link,name,description,ended FROM shotgun"
+	query := "SELECT id,unlock_time,form_link,image_link,name,description,ended FROM shotgun"
 
 	conn, err := pgx.ConnectConfig(postgresql.SQLCtx, postgresql.SQLConn)
 	if err != nil {
@@ -28,14 +28,13 @@ func LoadShotgunsIntoCache() {
 
 	for rows.Next() {
 		var id, formLink, imageLink, name, description sql.NullString
-		var createdTime, unlockTime sql.NullInt64
+		var unlockTime sql.NullInt64
 		var ended bool
 
-		rows.Scan(&id, &createdTime, &unlockTime, &formLink, &imageLink, &name, &description, &ended)
+		rows.Scan(&id, &unlockTime, &formLink, &imageLink, &name, &description, &ended)
 
 		shotgun := Shotgun{
 			Id:          id.String,
-			CreatedTime: createdTime.Int64,
 			UnlockTime:  unlockTime.Int64,
 			FormLink:    formLink.String,
 			ImageBytes:  imageLink.String,

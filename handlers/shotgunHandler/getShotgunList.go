@@ -3,7 +3,6 @@ package shotgunHandler
 import (
 	"oui/models"
 	"oui/models/shotgun"
-	"oui/models/user"
 	"time"
 
 	"github.com/kataras/iris/v12"
@@ -11,14 +10,8 @@ import (
 
 func List(c iris.Context, route models.Route) {
 
-	var token user.UserToken
-	if t := c.GetID(); t != nil {
-		token = t.(user.UserToken)
-	}
-
 	data := struct {
-		Running []shotgun.Shotgun `json:"running"`
-		Ended   []shotgun.Shotgun `json:"ended"`
+		Shotguns []shotgun.Shotgun `json:"shotguns"`
 	}{}
 
 	shotguns, err := shotgun.GetAllShotguns()
@@ -31,17 +24,10 @@ func List(c iris.Context, route models.Route) {
 	}
 
 	for _, s := range shotguns {
-		if !user.HasPermission(token.ID, "shotgun.detail") {
-			s.CreatedTime = -1
-			if time.Now().UnixMilli() < s.UnlockTime {
-				s.FormLink = ""
-			}
+		if time.Now().UnixMilli() < s.UnlockTime {
+			s.FormLink = ""
 		}
-		if s.Ended {
-			data.Ended = append(data.Ended, s)
-		} else {
-			data.Running = append(data.Running, s)
-		}
+		data.Shotguns = append(data.Shotguns, s)
 	}
 
 	c.StopWithJSON(iris.StatusOK, data)
