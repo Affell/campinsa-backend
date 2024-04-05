@@ -5,6 +5,7 @@ import (
 	"oui/models/shotgun"
 	"time"
 
+	"github.com/kataras/golog"
 	"github.com/kataras/iris/v12"
 )
 
@@ -16,6 +17,7 @@ func List(c iris.Context, route models.Route) {
 
 	shotguns, err := shotgun.GetAllShotguns()
 	if err != nil {
+		golog.Debug(err)
 		c.StopWithStatus(iris.StatusInternalServerError)
 		return
 	} else if len(shotguns) == 0 {

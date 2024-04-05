@@ -38,8 +38,9 @@ func InitRedis() (redisConfig Redis) {
 	user.UserTokenRedisConn.FlushAll(ctx)
 
 	shotgun.RedisConn = redis.NewClient(&redis.Options{
-		Addr: redisConfig.URL,
-		DB:   1,
+		Addr:     redisConfig.URL,
+		DB:       1,
+		Password: redisConfig.Password,
 	})
 	shotgun.RedisCtx = context.Background()
 	shotgun.RedisConn.FlushAll(ctx)
