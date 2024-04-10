@@ -16,9 +16,9 @@ func Download(c iris.Context, route models.Route) {
 
 	switch route.Secondary {
 	case "android":
-		c.SendFile("public/caritaxi/android.apk", "android.apk")
+		c.SendFile("public/caritaxi/android.apk", "caritaxi.apk")
 	case "ios":
-		c.Redirect(os.Getenv("APPLE_STORE_LINK"), iris.StatusPermanentRedirect)
+		c.Redirect(os.Getenv("APPLE_STORE_LINK"), iris.StatusFound)
 	default:
 		c.StopWithStatus(iris.StatusNotFound)
 	}

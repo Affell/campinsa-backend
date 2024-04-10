@@ -28,7 +28,7 @@ func List(c iris.Context, route models.Route) {
 			data.Friday = m
 		} else if s.Id == "2" {
 			data.Thursday = m
-		} else if now.Weekday() == time.Unix(0, s.UnlockTime*int64(time.Second)).Weekday() {
+		} else if now.Weekday() == time.Unix(0, s.UnlockTime*int64(time.Second)).In(time.Local).Weekday() {
 			data.Shotguns = append(data.Shotguns, m)
 		}
 	}
