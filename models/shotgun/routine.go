@@ -9,7 +9,7 @@ import (
 )
 
 func LoadShotgunsIntoCache() {
-	query := "SELECT id,unlock_time,form_link,image_link,name,description,ended FROM shotgun"
+	query := "SELECT id,unlock_time,form_link,image_link,name FROM shotgun"
 
 	conn, err := pgx.ConnectConfig(postgresql.SQLCtx, postgresql.SQLConn)
 	if err != nil {
@@ -27,20 +27,17 @@ func LoadShotgunsIntoCache() {
 	}
 
 	for rows.Next() {
-		var id, formLink, imageLink, name, description sql.NullString
+		var id, formLink, imageLink, name sql.NullString
 		var unlockTime sql.NullInt64
-		var ended bool
 
-		rows.Scan(&id, &unlockTime, &formLink, &imageLink, &name, &description, &ended)
+		rows.Scan(&id, &unlockTime, &formLink, &imageLink, &name)
 
 		shotgun := Shotgun{
-			Id:          id.String,
-			UnlockTime:  unlockTime.Int64,
-			FormLink:    formLink.String,
-			ImageBytes:  imageLink.String,
-			Name:        name.String,
-			Description: description.String,
-			Ended:       ended,
+			Id:         id.String,
+			UnlockTime: unlockTime.Int64,
+			FormLink:   formLink.String,
+			ImageBytes: imageLink.String,
+			Name:       name.String,
 		}
 		if !shotgun.StoreRedis() {
 			golog.Errorf("failed to store shotgun %v : '%s'", id, name)

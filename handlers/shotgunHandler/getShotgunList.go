@@ -5,31 +5,32 @@ import (
 	"oui/models/shotgun"
 	"time"
 
-	"github.com/kataras/golog"
 	"github.com/kataras/iris/v12"
 )
 
 func List(c iris.Context, route models.Route) {
 
 	data := struct {
-		Shotguns []shotgun.Shotgun `json:"shotguns"`
+		Thursday map[string]interface{}   `json:"thursday"`
+		Friday   map[string]interface{}   `json:"friday"`
+		Shotguns []map[string]interface{} `json:"shotguns"`
 	}{}
 
 	shotguns, err := shotgun.GetAllShotguns()
 	if err != nil {
-		golog.Debug(err)
 		c.StopWithStatus(iris.StatusInternalServerError)
 		return
-	} else if len(shotguns) == 0 {
-		c.StopWithStatus(iris.StatusNoContent)
-		return
 	}
-
+	now := time.Now()
 	for _, s := range shotguns {
-		if time.Now().UnixMilli() < s.UnlockTime {
-			s.FormLink = ""
+		m := s.ToWebDetails()
+		if s.Id == "1" {
+			data.Friday = m
+		} else if s.Id == "2" {
+			data.Thursday = m
+		} else if now.Weekday() == time.Unix(0, s.UnlockTime*int64(time.Second)).Weekday() {
+			data.Shotguns = append(data.Shotguns, m)
 		}
-		data.Shotguns = append(data.Shotguns, s)
 	}
 
 	c.StopWithJSON(iris.StatusOK, data)

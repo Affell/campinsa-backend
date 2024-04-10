@@ -4,19 +4,22 @@ import (
 	"encoding/json"
 	"oui/models/postgresql"
 
+	"github.com/fatih/structs"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v4"
 	"github.com/kataras/golog"
 )
 
 type Shotgun struct {
-	Id          string `json:"id"`
-	FormLink    string `json:"form_link"`
-	ImageBytes  string `json:"image_bytes"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	UnlockTime  int64  `json:"unlock_time"`
-	Ended       bool   `json:"ended"`
+	Id         string `json:"id" structs:"id"`
+	FormLink   string `json:"form_link" structs:"-"`
+	ImageBytes string `json:"image_bytes" structs:"image_bytes"`
+	Name       string `json:"name" structs:"name"`
+	UnlockTime int64  `json:"unlock_time" structs:"unlock_time"`
+}
+
+func (shotgun Shotgun) ToWebDetails() map[string]interface{} {
+	return structs.Map(shotgun)
 }
 
 func (shotgun *Shotgun) StoreRedis() bool {
@@ -39,11 +42,11 @@ func (shotgun *Shotgun) StorePgSQL() (success bool) {
 		shotgun.Id = uuid.New().String()
 	}
 
-	query := "INSERT INTO shotgun (id, unlock_time, form_link, image_link, name, description, ended) " +
-		"VALUES ($1,$2,$3,$4,$5,$6,$7) " +
+	query := "INSERT INTO shotgun (id, unlock_time, form_link, image_link, name) " +
+		"VALUES ($1,$2,$3,$4,$5) " +
 		"ON CONFLICT (id) do " +
-		"UPDATE set (unlock_time, form_link, image_link, name, description, ended) = " +
-		"($2,$3,$4,$5,$6,$7)"
+		"UPDATE set (unlock_time, form_link, image_link, name) = " +
+		"($2,$3,$4,$5)"
 
 	args := []interface{}{
 		shotgun.Id,
@@ -51,8 +54,6 @@ func (shotgun *Shotgun) StorePgSQL() (success bool) {
 		shotgun.FormLink,
 		shotgun.ImageBytes,
 		shotgun.Name,
-		shotgun.Description,
-		shotgun.Ended,
 	}
 
 	_, err = sqlCo.Exec(postgresql.SQLCtx, query, args...)
@@ -91,6 +92,21 @@ func GetAllShotguns() (shotguns []Shotgun, err error) {
 		if s.Id != "" {
 			shotguns = append(shotguns, s)
 		}
+	}
+
+	return
+}
+
+func GetShotgun(id string) (shotgun Shotgun, err error) {
+
+	data, err := RedisConn.Get(RedisCtx, id).Bytes()
+	if err != nil {
+		return
+	}
+
+	err = json.Unmarshal(data, &shotgun)
+	if err != nil {
+		return
 	}
 
 	return
