@@ -2,6 +2,7 @@ package planning
 
 var Days = [...]string{"Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"}
 var GlobalPlanning Planning
+var UpdateToken string
 
 type (
 	Planning         map[int64]UserWeekPlanning

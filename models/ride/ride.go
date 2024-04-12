@@ -1,6 +1,8 @@
 package ride
 
-import "github.com/fatih/structs"
+import (
+	"github.com/fatih/structs"
+)
 
 func Init() {
 	LoadRiders()
@@ -8,5 +10,6 @@ func Init() {
 
 func (ride Ride) ToAppDetails() map[string]interface{} {
 	m := structs.Map(ride)
+	delete(m, "date")
 	return m
 }

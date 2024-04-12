@@ -8,6 +8,7 @@ var (
 	Handlers models.HandlerMap = models.HandlerMap{
 		"login":    Login,
 		"download": Download,
+		"update":   OnUpdate,
 	}
 )
 

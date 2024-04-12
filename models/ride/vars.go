@@ -20,4 +20,5 @@ type Ride struct {
 	Task         string `json:"task" structs:"task"`
 	OperatorName string `json:"operator_name" structs:"operator_name"`
 	TaxiName     string `json:"taxi_name" structs:"taxi_name"`
+	Date         int64  `json:"date"`
 }
