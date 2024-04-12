@@ -17,23 +17,19 @@ type LocationInfo struct {
 
 func NilLocation() (l Location) { return }
 
+func hsin(theta float64) float64 {
+	return math.Pow(math.Sin(theta/2), 2)
+}
+
 func Distance(first, second Location) float64 {
 	radlat1 := float64(math.Pi * first.Latitude / 180)
+	radlng1 := float64(math.Pi * first.Longitude / 180)
 	radlat2 := float64(math.Pi * second.Latitude / 180)
+	radlng2 := float64(math.Pi * second.Longitude / 180)
 
-	theta := float64(first.Longitude - second.Longitude)
-	radtheta := float64(math.Pi * theta / 180)
-
-	dist := math.Sin(radlat1)*math.Sin(radlat2) + math.Cos(radlat1)*math.Cos(radlat2)*math.Cos(radtheta)
-	if dist > 1 {
-		dist = 1
-	}
-
-	dist = math.Acos(dist)
-	dist = dist * 180 / math.Pi
-	dist = dist * 60 * 1.1515 * 1.609344
-
-	return dist
+	r := 6378.1
+	h := hsin(radlat2-radlat1) + math.Cos(radlat1)*math.Cos(radlat2)*hsin(radlng2-radlng1)
+	return 2 * r * math.Asin(math.Sqrt(h))
 }
 
 func OnCurrentLocation(c *Client, data interface{}) {

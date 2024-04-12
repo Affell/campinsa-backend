@@ -10,6 +10,12 @@ import (
 )
 
 func BroadcastNewRide(r ride.Ride) {
+
+	message := map[string]interface{}{
+		"success": true,
+		"ride":    r,
+	}
+
 	var targets []*Client
 	loc := Location{
 		Latitude:  r.Start.Latitude,
@@ -19,32 +25,40 @@ func BroadcastNewRide(r ride.Ride) {
 	for _, user := range TaxiUsers {
 		if user.User.ID != 0 && user.Location != NilLocation() {
 			m[user.User.ID] = Distance(loc, user.Location)
-			for i, t := range targets {
-				if m[user.User.ID] < m[t.User.ID] {
-					targets = insert(targets, i, t)
-					break
+			if len(targets) == 0 {
+				targets = append(targets, user)
+			} else {
+				for i, t := range targets {
+					if m[user.User.ID] < m[t.User.ID] {
+						targets = insert(targets, i, user)
+						break
+					}
 				}
 			}
+		} else {
+			golog.Debugf("%v %v", user.User.ID, user.Location)
 		}
 	}
 
 	if len(targets) > 0 {
-		targets[0].Send("newRide", r)
+		targets[0].Send("newRide", message)
 		if len(targets) > 1 {
 			time.AfterFunc(time.Second*5, func() {
 				update, err := ride.GetRideByID(r.ID)
 				if err != nil {
-					Broadcast("newRide", r, true)
+					Broadcast("newRide", message, true)
 					return
 				}
 				if update.Taxi == 0 {
-					targets[1].Send("newRide", r)
+					targets[1].Send("newRide", message)
 				}
 				if len(targets) > 2 {
 					time.AfterFunc(time.Second*5, func() {
 						update, err := ride.GetRideByID(r.ID)
 						if err != nil || update.Taxi == 0 {
-							Broadcast("newRide", r, true)
+							for i := 2; i < len(targets); i++ {
+								targets[i].Send("newRide", message)
+							}
 						}
 					})
 				}
@@ -74,8 +88,7 @@ func OnNewRide(c *Client, data interface{}) {
 		m["ride"] = r.ToAppDetails()
 		c.Send("newRide", m)
 		if r.Date != 0 {
-			golog.Debugf("Waiting %vm", time.Until(time.Unix(0, r.Date*int64(time.Second))).Minutes())
-			time.AfterFunc(time.Until(time.Unix(0, r.Date*int64(time.Second))), func() {
+			time.AfterFunc(time.Until(time.Unix(r.Date/1000, 0)), func() {
 				BroadcastNewRide(r)
 			})
 		} else {
