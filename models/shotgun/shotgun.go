@@ -3,6 +3,7 @@ package shotgun
 import (
 	"encoding/json"
 	"oui/models/postgresql"
+	"sort"
 
 	"github.com/fatih/structs"
 	"github.com/google/uuid"
@@ -93,6 +94,10 @@ func GetAllShotguns() (shotguns []Shotgun, err error) {
 			shotguns = append(shotguns, s)
 		}
 	}
+
+	sort.Slice(shotguns, func(i, j int) bool {
+		return shotguns[i].UnlockTime < shotguns[j].UnlockTime
+	})
 
 	return
 }

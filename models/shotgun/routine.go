@@ -9,7 +9,7 @@ import (
 )
 
 func LoadShotgunsIntoCache() {
-	query := "SELECT id,unlock_time,form_link,image_link,name FROM shotgun"
+	query := "SELECT id,unlock_time,form_link,image_link,name FROM shotgun ORDER BY unlock_time"
 
 	conn, err := pgx.ConnectConfig(postgresql.SQLCtx, postgresql.SQLConn)
 	if err != nil {
