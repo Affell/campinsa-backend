@@ -6,6 +6,8 @@ import (
 	"oui/models/planning"
 	"oui/models/ride"
 	"oui/models/user"
+
+	"github.com/kataras/golog"
 )
 
 func OnMode(c *Client, data interface{}) {
@@ -45,6 +47,7 @@ func OnMode(c *Client, data interface{}) {
 		c.Send("rideAnswer", map[string]interface{}{"success": true, "ride": ride})
 	}
 
+	golog.Infof("CariTaxi authentification by : %v %v", u.Firstname, u.Lastname)
 	c.Send("authenticated", nil)
 }
 
