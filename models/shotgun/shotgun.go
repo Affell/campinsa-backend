@@ -17,6 +17,7 @@ type Shotgun struct {
 	ImageBytes string `json:"image_bytes" structs:"image_bytes"`
 	Name       string `json:"name" structs:"name"`
 	UnlockTime int64  `json:"unlock_time" structs:"unlock_time"`
+	Location   string `json:"location" structs:"location"`
 }
 
 func (shotgun Shotgun) ToWebDetails() map[string]interface{} {
@@ -43,11 +44,11 @@ func (shotgun *Shotgun) StorePgSQL() (success bool) {
 		shotgun.Id = uuid.New().String()
 	}
 
-	query := "INSERT INTO shotgun (id, unlock_time, form_link, image_link, name) " +
-		"VALUES ($1,$2,$3,$4,$5) " +
+	query := "INSERT INTO shotgun (id, unlock_time, form_link, image_link, name, location) " +
+		"VALUES ($1,$2,$3,$4,$5,$6) " +
 		"ON CONFLICT (id) do " +
-		"UPDATE set (unlock_time, form_link, image_link, name) = " +
-		"($2,$3,$4,$5)"
+		"UPDATE set (unlock_time, form_link, image_link, name, location) = " +
+		"($2,$3,$4,$5,$6)"
 
 	args := []interface{}{
 		shotgun.Id,
@@ -55,6 +56,7 @@ func (shotgun *Shotgun) StorePgSQL() (success bool) {
 		shotgun.FormLink,
 		shotgun.ImageBytes,
 		shotgun.Name,
+		shotgun.Location,
 	}
 
 	_, err = sqlCo.Exec(postgresql.SQLCtx, query, args...)

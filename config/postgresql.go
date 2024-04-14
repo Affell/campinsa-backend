@@ -70,6 +70,7 @@ func InitPgSQL() (context.Context, *pgx.ConnConfig) {
 		form_link 		TEXT 		NOT NULL,
 		image_link 		TEXT 		NOT NULL,
 		name 					TEXT 		NOT NULL,
+		location 			TEXT 		NOT NULL,
 		PRIMARY KEY(id)
 	);
 	CREATE TABLE IF NOT EXISTS ride
