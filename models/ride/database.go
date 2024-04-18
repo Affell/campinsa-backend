@@ -134,10 +134,9 @@ func GetAllRides(bypassDate bool) (rides []Ride) {
 	if err != nil {
 		return
 	}
-	nowT := time.Now()
 	for rows.Next() {
 		r := ScanRide(rows)
-		if r.ID != 0 && nowT.Weekday() <= time.Unix(0, r.ID*int64(time.Second)/1000).In(time.Local).Weekday() || (r.Date != 0 && nowT.Weekday() <= time.Unix(0, r.Date*int64(time.Second)/1000).In(time.Local).Weekday()) {
+		if r.ID != 0 {
 			if r.Date == 0 || bypassDate || r.Date <= now {
 				r.TranslateRideIds()
 				rides = append(rides, r)
