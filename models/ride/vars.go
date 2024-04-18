@@ -1,6 +1,7 @@
 package ride
 
 var Riders map[int64]Ride
+var GolfetteStatus bool
 
 type LatLng struct {
 	Latitude  float64 `json:"latitude" structs:"latitude"`

@@ -16,4 +16,8 @@ type (
 	LoginForm struct {
 		Token string `form:"token" json:"token"`
 	}
+	GolfetteQuery struct {
+		Token  string `form:"token" json:"token"`
+		Status bool   `form:"status" json:"status"`
+	}
 )
