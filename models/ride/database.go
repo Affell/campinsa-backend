@@ -128,15 +128,16 @@ func GetAllRides(bypassDate bool) (rides []Ride) {
 	}
 	defer conn.Close(postgresql.SQLCtx)
 
+	now := time.Now().UnixMilli()
 	query := "SELECT id, operator, taxi, completed, clientName, clientNumber, startName, latitudeStart, longitudeStart, endName, latitudeEnd, longitudeEnd, task, date FROM ride"
 	rows, err := conn.Query(postgresql.SQLCtx, query)
 	if err != nil {
 		return
 	}
-	now := time.Now().UnixMilli()
+	nowT := time.Now()
 	for rows.Next() {
 		r := ScanRide(rows)
-		if r.ID != 0 {
+		if r.ID != 0 && nowT.Weekday() <= time.Unix(0, r.ID*int64(time.Second)/1000).In(time.Local).Weekday() || (r.Date != 0 && nowT.Weekday() <= time.Unix(0, r.Date*int64(time.Second)/1000).In(time.Local).Weekday()) {
 			if r.Date == 0 || bypassDate || r.Date <= now {
 				r.TranslateRideIds()
 				rides = append(rides, r)
