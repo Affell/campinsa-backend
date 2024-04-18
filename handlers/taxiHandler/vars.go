@@ -9,6 +9,7 @@ var (
 		"login":    Login,
 		"download": Download,
 		"update":   OnUpdate,
+		"golfette": Golfette,
 	}
 )
 
