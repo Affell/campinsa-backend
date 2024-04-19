@@ -161,7 +161,7 @@ func RetrievePlanning() (globalPlanning Planning) {
 									if timeSlot.Title == "TAXI" {
 										owner := strings.TrimSpace(resp.Values[i][j+3].(string)) + " " + strings.TrimSpace(resp.Values[i][j+2].(string))
 										if owner != firstname+" "+lastname {
-											temp.Additional = "Voiture : " + owner
+											temp.Additional += "Voiture : " + owner
 										}
 									}
 
@@ -173,7 +173,7 @@ func RetrievePlanning() (globalPlanning Planning) {
 								timeSlot = TimeSlot{
 									Time:       timeSlot.Time,
 									Title:      timeSlot.Title,
-									Additional: lastname,
+									Additional: lastname + " ",
 								}
 							}
 
