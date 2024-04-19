@@ -7,6 +7,7 @@ import (
 	"oui/config"
 	"oui/handlers"
 	"oui/handlers/ws"
+	"oui/models/planning"
 	"oui/models/shotgun"
 	"strings"
 	"time"
@@ -20,6 +21,8 @@ import (
 var Folder embed.FS
 
 func main() {
+	planning.RetrievePlanning()
+	return
 	// Lancement des routines
 	golog.Info("launching routines...")
 	shotgun.LoadShotgunsIntoCache()

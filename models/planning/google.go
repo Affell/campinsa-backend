@@ -167,7 +167,7 @@ func RetrievePlanning() (globalPlanning Planning) {
 
 									globalPlanning[u.ID][iDay] = append(globalPlanning[u.ID][iDay], temp)
 								} else {
-									golog.Errorf("Sheets: Unable to recognize %s %s", firstname, lastname)
+									golog.Errorf("Sheets: %v%v Unable to recognize %s %s", clmconv.Itoa(j), i, firstname, lastname)
 								}
 							} else {
 								timeSlot = TimeSlot{
