@@ -18,6 +18,7 @@ func OnUpdate(c iris.Context, route models.Route) {
 	err := c.ReadBody(&body)
 	if err != nil || body.Token != planning.UpdateToken {
 		c.StopWithStatus(iris.StatusUnauthorized)
+		return
 	}
 
 	planning.UpdatePlanning()
